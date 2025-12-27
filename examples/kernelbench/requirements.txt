@@ -1,0 +1,16 @@
+# KernelBench OpenEvolve Integration Requirements
+# ================================================
+# Note: Most dependencies come from the parent projects.
+# This file lists additional requirements specific to this integration.
+
+# Core dependencies (should already be installed)
+torch>=2.0.0
+numpy>=1.20.0
+pydantic>=2.0.0
+
+# KernelBench requirements
+datasets>=2.0.0  # For loading problems from HuggingFace
+
+# OpenEvolve requirements  
+# (installed from openevolve/pyproject.toml)
+

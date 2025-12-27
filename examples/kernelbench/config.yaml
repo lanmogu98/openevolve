@@ -1,0 +1,78 @@
+# KernelBench Integration Configuration for OpenEvolve
+# =====================================================
+#
+# This configuration is for Level 3 Problem 43: MinGPT Causal Attention
+# Modify KERNELBENCH_LEVEL and KERNELBENCH_PROBLEM_ID env vars for other problems
+
+max_iterations: 50
+checkpoint_interval: 10
+
+# LLM configuration
+llm:
+  # Primary model for code generation
+  primary_model: "gemini-2.5-flash"
+  primary_model_weight: 0.8
+  
+  # Secondary model for diversity
+  secondary_model: "gemini-2.5-flash-lite"
+  secondary_model_weight: 0.2
+  
+  # API settings
+  api_base: "https://generativelanguage.googleapis.com/v1beta/openai/"
+  temperature: 0.7
+  max_tokens: 16000
+  timeout: 180  # CUDA compilation can be slow
+
+# Prompt configuration
+prompt:
+  system_message: |
+    You are an expert CUDA kernel optimization engineer. Your task is to optimize
+    PyTorch neural network modules by implementing faster versions using:
+    
+    1. PyTorch 2.0 features (torch.compile, F.scaled_dot_product_attention)
+    2. Custom CUDA kernels via torch.utils.cpp_extension.load_inline
+    3. Triton kernels (@triton.jit)
+    4. Memory-efficient algorithms (Flash Attention patterns)
+    5. Fused operations to reduce memory bandwidth
+    
+    CRITICAL REQUIREMENTS:
+    - Your optimized class MUST be named 'ModelNew'
+    - It MUST accept the same __init__ parameters as the reference Model
+    - It MUST produce numerically identical outputs (within FP32 tolerance)
+    - Focus on CORRECTNESS first, then SPEED
+    
+    The code will be evaluated on an NVIDIA A800 GPU with CUDA 12.2.
+    
+    Common optimization strategies for attention:
+    - Use F.scaled_dot_product_attention() for Flash Attention (PyTorch 2.0+)
+    - Avoid materializing the full T×T attention matrix
+    - Fuse Q/K/V projections where possible
+    - Use contiguous memory layouts
+
+# Database configuration  
+database:
+  population_size: 30
+  archive_size: 15
+  num_islands: 2
+  elite_selection_ratio: 0.3
+  exploitation_ratio: 0.6
+  similarity_threshold: 0.95
+
+# Evaluator configuration
+evaluator:
+  timeout: 300  # 5 minutes - CUDA compilation can be slow
+  max_retries: 2
+  parallel_evaluations: 1  # GPU evaluation should be serial
+  
+  # Cascade evaluation (optional - speeds up by failing fast)
+  cascade_evaluation: true
+  cascade_thresholds: [0.5]  # Stage 1 must pass compilation
+
+# Evolution settings
+diff_based_evolution: true
+max_code_length: 30000  # CUDA code can be verbose
+
+# Note: Set these environment variables before running:
+# export KERNELBENCH_LEVEL=3
+# export KERNELBENCH_PROBLEM_ID=43
+
